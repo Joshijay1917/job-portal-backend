@@ -11,7 +11,7 @@ import jobRouter from "./routes/job.routes.js"
 const app = express()
 
 app.use(express.json())
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
+app.use(cors({ origin: ['http://localhost:5173', process.env.CORS!], credentials: true }))
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 app.set('view engine', 'ejs');
