@@ -12,6 +12,7 @@ export interface CandidateInternface extends Document {
     expected_salary?: { min: number, max: number };
     category?: Category | null;
     email_verified: boolean;
+    profile_completed: boolean;
     refresh_token: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -52,6 +53,10 @@ const candidateSchema = new mongoose.Schema<CandidateInternface>({
         default: null
     },
     email_verified: {
+        type: Boolean,
+        default: false
+    },
+    profile_completed: {
         type: Boolean,
         default: false
     },

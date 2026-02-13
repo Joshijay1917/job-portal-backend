@@ -1,91 +1,73 @@
-import type { CookieOptions } from "express";
-import { AuthService } from "../services/auth.service.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
-import { Recruiter } from "../models/recruiter.model.js";
+import { Recruiter, type RecruiterInterface } from "../models/recruiter.model.js";
+import { Candidate, type CandidateInternface } from "../models/candidate.model.js";
+import { CandidateService } from "../services/candidate.service.js";
+import { RecruiterService } from "../services/recruiter.service.js";
 
-export const registerUser = asyncHandler(async (req, res) => {
-    const user = await AuthService.register(req.body)
+export const getUserDetails = asyncHandler(async (req, res) => {
+    const id = req.user?.id
+    const role = req.user?.role
 
-    res.redirect(`/verify-email?userId=${user.id}`)
-    // res
-    // .status(201)
-    // .json(
-    //     new ApiResponse(201, user, 'User registered successfully!')
-    // )
-})
+    let details = null
+    if(role === 'recruiter') {
+        details = await Recruiter.findById(id).select("-password -refresh_token")
+    } else {
+        details = await Candidate.findById(id).select("-password -refresh_token")
+    }
 
-export const loginUser = asyncHandler(async (req, res) => {
-    const { user, refreshToken, accessToken } = await AuthService.login(req.body)
-
-    const options: CookieOptions = {
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000
+    if(!details) {
+        throw new ApiError(400, 'Failed to get user details!')
     }
 
     res
-        .cookie('accessToken', accessToken, options)
-        .cookie('refreshToken', refreshToken, options)
-        .status(200)
-        .json(
-            new ApiResponse(200, user, 'User logged in successfully!')
-        )
+    .status(200)
+    .json(
+        new ApiResponse(200, details, 'Get user details!')
+    )
 })
 
-export const forgotPassword = asyncHandler(async (req, res) => {
+export const updateProfile = asyncHandler(async (req, res) => {
+    const role = req.user?.role
+    const id = req.user?.id
 
-})
-
-export const refreshToken = asyncHandler(async (req, res) => {
-    const { refreshToken } = req.cookies
-
-    if (!refreshToken) {
-        return res.redirect('/login')
+    let updated = null
+    let isComplete = false
+    if(role === 'recruiter') {
+        updated = await RecruiterService.updateDetails({ recruiterId: id, ...req.body}) as RecruiterInterface
+        if(!updated) {
+            throw new ApiError(400, 'User not found!')
+        }
+        isComplete = await RecruiterService.isRecruiterProfileComplete(updated)
+    } else {
+        updated = await CandidateService.updateDetails({ candidateId: id, ...req.body}) as CandidateInternface
+        if(!updated) {
+            throw new ApiError(400, 'User not found!')
+        }
+        isComplete = await CandidateService.isCandidateProfileComplete(updated) 
     }
 
-    try {
-        console.log('Decoding...')
-        const decodedToken = await verifyRefreshToken(refreshToken) as { _id: string, iat: number, exp: number }
-
-        console.log('refreshToken:', decodedToken);
-        const user = await Recruiter.findById(decodedToken._id)
-
-        if (!user || !user.refresh_token || user.refresh_token !== refreshToken) {
-            return res.redirect('/login');
-        }
-
-        console.log('Token generating..')
-        const newAccessToken = await generateAccessToken({ _id: user._id, email: user.email })
-        const newRefreshToken = await generateRefreshToken({ _id: user._id })
-
-        if (user && user.refresh_token && newRefreshToken) {
-            user.refresh_token = newRefreshToken;
-            await user.save({ validateBeforeSave: false });
-        }
-
-        const options: CookieOptions = {
-            httpOnly: true,
-            sameSite: 'lax',
-            maxAge: 30 * 24 * 60 * 60 * 1000
-        }
-
-        res
-            .cookie('accessToken', newAccessToken, options)
-            .cookie('refreshToken', newRefreshToken, options)
-            .status(200)
-            .json(
-                new ApiResponse(200, { _id: user._id, email: user.email }, 'User logged in successfully!')
-            )
-    } catch (error) {
-        console.error(error)
-        res.redirect('/login')
+    if(isComplete && !updated.profile_completed) {
+        updated.profile_completed = true
+        await updated.save({ validateBeforeSave: false })
     }
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, updated, 'Profile updated!')
+    )
 })
 
-export const userDetails = asyncHandler(async (req, res) => {
-    console.log('Response sended!')
-    res.status(200).json(new ApiResponse(200, req.user, 'User LoggedIn Successfully!'))
+export const getPosts = asyncHandler(async (req, res) => {
+    const id = req.user?.id
+
+    const posts = await RecruiterService.getAllPosts(id!)
+    
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, posts, 'Get all posts successfully!')
+    )
 })

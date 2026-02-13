@@ -1,10 +1,11 @@
-import { Candidate } from "../models/candidate.model.js";
+import { Candidate, type CandidateInternface } from "../models/candidate.model.js";
 import type { LoginBody, RegisterBody } from "../types/auth.js";
 import { ApiError } from "../utils/ApiError.js";
 import bcrypt from 'bcrypt'
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { verifyEmailOtp } from "./email.service.js";
 import { Recruiter } from "../models/recruiter.model.js";
+import type { candidateUpdateDetails } from "../types/candidate.js";
 
 export class CandidateService {
     static async register(data: RegisterBody) {
@@ -16,7 +17,7 @@ export class CandidateService {
 
         const normalizedEmail = email.toLowerCase().trim();
         let existingUser = await Candidate.findOne({ email: normalizedEmail })
-        if(!existingUser) {
+        if (!existingUser) {
             existingUser = await Recruiter.findOne({ email: normalizedEmail })
         }
 
@@ -93,4 +94,49 @@ export class CandidateService {
             email_verified: user.email_verified
         };
     }
+
+    static async updateDetails(data: candidateUpdateDetails) {
+        const { candidateId, fname, email, description, experience_years, resume, expected_salary, category } = data
+
+        const updateObj: any = {}
+
+        if (fname !== undefined) updateObj.fname = fname
+        if (email !== undefined) updateObj.email = email
+        if (description !== undefined) updateObj.description = description
+        if (experience_years !== undefined) updateObj.experience_years = experience_years
+        if (resume !== undefined) updateObj.resume = resume
+        if (category !== undefined) updateObj.category = category
+
+        console.log('Expected_salary:', expected_salary)
+
+        if (expected_salary) {
+            if (expected_salary.min !== undefined)
+                updateObj["expected_salary.min"] = expected_salary.min
+
+            if (expected_salary.max !== undefined)
+                updateObj["expected_salary.max"] = expected_salary.max
+        }
+
+        console.log('Update Obj:', updateObj)
+
+        const updated = await Candidate.findByIdAndUpdate(
+            candidateId,
+            updateObj,
+            { new: true }
+        ).select("-password -refresh_token")
+
+        return updated
+    }
+
+    static async isCandidateProfileComplete(candidate: CandidateInternface) {
+        return Boolean(
+            candidate.description?.trim() &&
+            candidate.experience_years !== undefined &&
+            candidate.category &&
+            candidate.expected_salary &&
+            candidate.expected_salary.min !== undefined &&
+            candidate.expected_salary.max !== undefined
+        )
+    }
+
 }

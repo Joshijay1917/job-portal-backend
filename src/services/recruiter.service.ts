@@ -1,8 +1,8 @@
 import { Candidate } from "../models/candidate.model.js";
-import { Recruiter } from "../models/recruiter.model.js";
+import { JobPost } from "../models/jobpost.model.js";
+import { Recruiter, type RecruiterInterface } from "../models/recruiter.model.js";
 import type { RegisterBody } from "../types/auth.js";
-import type { RegisterCandidate } from "../types/candidate.js";
-import type { LoginRecruiter, RegisterRecruiter } from "../types/recruiter.js";
+import type { LoginRecruiter, recruiterUpdateDetails } from "../types/recruiter.js";
 import { ApiError } from "../utils/ApiError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { sendEmail, verifyEmailOtp } from "./email.service.js";
@@ -36,7 +36,8 @@ export class RecruiterService {
             return {
                 id: existingUser._id,
                 email: existingUser.email,
-                email_verified: existingUser.email_verified
+                email_verified: existingUser.email_verified,
+                role: 'recruiter'
             };
         }
 
@@ -114,5 +115,62 @@ export class RecruiterService {
             email: user.email,
             email_verified: user.email_verified
         };
+    }
+
+    static async updateDetails(data: recruiterUpdateDetails) {
+        const { recruiterId, email, cname, owner, category, employee_size, company_website } = data
+
+        const updateObj: any = {}
+
+        if(email !== undefined) updateObj.email = email
+        if(cname !== undefined) updateObj.cname = cname
+        if(owner !== undefined) updateObj.owner = owner
+        if(category !== undefined) updateObj.category = category
+        if(company_website !== undefined) updateObj.company_website = company_website
+
+        console.log('Emplyoee_size:', employee_size)
+
+        if(employee_size) {
+            if (employee_size.min !== undefined)
+                updateObj["employee_size.min"] = employee_size.min
+
+            if (employee_size.max !== undefined)
+                updateObj["employee_size.max"] = employee_size.max
+        }
+
+        const updated = await Recruiter.findByIdAndUpdate(
+            recruiterId,
+            updateObj,
+            { new: true }
+        ).select("-password -refresh_token")
+
+        return updated
+    }
+
+    static async isRecruiterProfileComplete(recruiter: RecruiterInterface) {
+        return Boolean(
+            recruiter.email &&
+            recruiter.cname &&
+            recruiter.owner &&
+            recruiter.category &&
+            recruiter.employee_size !== undefined &&
+            recruiter.employee_size.min !== undefined &&
+            recruiter.employee_size.max !== undefined &&
+            recruiter.company_website &&
+            recruiter.email_verified
+        )
+    }
+
+    static async getAllPosts(recruiterId: string) {
+        if(!recruiterId) {
+            throw new ApiError(400, 'RecruiterId not found!')
+        }
+
+        const posts = await JobPost.find({ recruiterId: recruiterId }).sort({ createdAt: -1 })
+        if(!posts || posts.length == 0) {
+            return []
+        }
+
+        return posts
     }
 }

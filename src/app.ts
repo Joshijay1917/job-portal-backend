@@ -1,5 +1,4 @@
 import express from "express"
-import userRouter from "./routes/user.routes.js"
 import emailRouter from "./routes/email.routes.js"
 import { errorHandler } from "./middlewares/errorHandler.middleware.js"
 import path from "node:path"
@@ -7,6 +6,7 @@ import cookieParser from "cookie-parser"
 import authRouter from "./routes/auth.routes.js"
 import cors from 'cors'
 import jobRouter from "./routes/job.routes.js"
+import userRouter from "./routes/user.routes.js"
 
 const app = express()
 
@@ -19,6 +19,7 @@ app.set('views', path.join("src", "views"))
 
 app.use("/api/auth", authRouter)
 app.use("/api/email", emailRouter)
+app.use("/api/user", userRouter)
 app.use("/api/job", jobRouter)
 
 app.use(errorHandler)

@@ -10,6 +10,7 @@ export interface RecruiterInterface extends Document {
     employee_size?: { min: number, max: number };
     company_website?: string;
     email_verified: boolean;
+    profile_completed: boolean;
     refresh_token: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -45,6 +46,10 @@ const RecruiterSchema = new mongoose.Schema<RecruiterInterface>({
         default: null
     },
     email_verified: {
+        type: Boolean,
+        default: false
+    },
+    profile_completed: {
         type: Boolean,
         default: false
     },

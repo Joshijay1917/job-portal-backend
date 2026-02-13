@@ -13,8 +13,8 @@ export const verifyToken = asyncHandler(async (req, res) => {
     if(!userId || !otp) {
         throw new ApiError(400, 'Invalid Access!')
     }
-
-    let user = null;
+    console.log(req.body)
+    let user = null; //"recruiter"
     if(role === 'recruiter') {
         user = await RecruiterService.verifyEmail(userId, otp)
     } else {

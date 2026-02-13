@@ -14,7 +14,8 @@ export const JobPost = asyncHandler(async (req, res) => {
 })
 
 export const getJobPosts = asyncHandler(async (req, res) => {
-    const posts = await JobService.get()
+    const page = req.query.page
+    const posts = await JobService.get(Number(page))
 
     res
     .status(200)
