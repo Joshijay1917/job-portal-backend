@@ -29,10 +29,12 @@ export class RecruiterService {
         }
 
         if (existingUser && !existingUser.email_verified) {
-            const messageId = await sendEmail(existingUser)
-            if (!messageId) {
-                throw new ApiError(500, 'Failed to send email!')
-            }
+            // const messageId = await sendEmail(existingUser)
+            // if (!messageId) {
+            //     throw new ApiError(500, 'Failed to send email!')
+            // }
+            existingUser.email_verified = true
+            await existingUser.save({ validateBeforeSave: false })
             return {
                 id: existingUser._id,
                 email: existingUser.email,
@@ -47,13 +49,14 @@ export class RecruiterService {
             cname: cname,
             owner: owner,
             email: normalizedEmail,
-            password: hash
+            password: hash,
+            email_verified: true
         })
 
-        const messageId = await sendEmail(user)
-        if (!messageId) {
-            throw new ApiError(500, 'Failed to send email!')
-        }
+        // const messageId = await sendEmail(user)
+        // if (!messageId) {
+        //     throw new ApiError(500, 'Failed to send email!')
+        // }
 
         return {
             id: user._id,

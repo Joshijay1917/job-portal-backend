@@ -37,3 +37,17 @@ export const ApplyJobPost = asyncHandler(async (req, res) => {
         new ApiResponse(201, appli, 'Applied to jobpost!')
     )
 })
+
+export const filterJobs = asyncHandler(async (req, res) => {
+    console.log('Get req:', { page: req.query, body: req.body })
+    const page = req.query.page
+    const jobs = await JobService.filterJobs(req.body, page ? Number(page) : 1)
+
+    console.log('Filtered:', jobs)
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, jobs, "Filtered jobs successfully!")
+    )
+})

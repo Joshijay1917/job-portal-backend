@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 
 export interface JobPostInternface extends Document {
     recruiterId: Types.ObjectId;
+    logo_url: string | null;
     title: string;
     description: string;
     experience_required?: { min: number, max: number };
@@ -22,6 +23,10 @@ const jobPostSchema = new mongoose.Schema<JobPostInternface>({
         ref: 'Candidate',
         required: true
     },
+    logo_url: {
+        type: String,
+        default: null
+    },
     title: {
         type: String,
         required: true
@@ -31,7 +36,8 @@ const jobPostSchema = new mongoose.Schema<JobPostInternface>({
         required: true
     },
     experience_required: {
-        type: { min: Number, max: Number }
+        type: { min: Number, max: Number },
+        default: null
     },
     salary: {
         type: { min: Number, max: Number },

@@ -1,3 +1,6 @@
+import { QueryFilter } from 'mongoose'
+import type { JobPostInternface } from '../models/jobpost.model.ts';
+
 export enum Category {
     Sde = 'Software Developer',
     Uiux = 'UI/UX',
@@ -9,8 +12,8 @@ export enum Category {
 }
 
 export enum JobType {
-    Ftype = 'Full Time',
-    Ptype = 'Part Time'
+    Ftype = 'Full time',
+    Ptype = 'Part time'
 }
 
 export type ApplyJobType = {
@@ -22,3 +25,16 @@ export enum Role {
     Recruter = 'recruiter',
     Candidate = 'candidate'
 }
+
+export interface FilterType extends QueryFilter<JobPostInternface> {
+    search?: string,
+    jobtype?: JobType,
+    experience_year?: string,
+    category?: Category
+}
+
+export type EXPERIENCE_LEVELS = [
+    { value: 'entry', find: {min:0, max:2} },
+    { value: 'mid', find: {min:2, max:4} },
+    { value: 'senior', find: {min:4, max:10}},
+];
