@@ -71,3 +71,15 @@ export const getPosts = asyncHandler(async (req, res) => {
         new ApiResponse(200, posts, 'Get all posts successfully!')
     )
 })
+
+export const getAppliedJobs = asyncHandler(async (req, res) => {
+    const id = req?.user?.id || null
+    console.log('Id:', id)
+    const posts = await CandidateService.getAppliedJobs(id);
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, posts, 'Get all posts!')
+    )
+})

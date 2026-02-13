@@ -51,12 +51,18 @@ export class JobService {
             throw new ApiError(400, 'Candidate id not founded')
         }
 
+        const applied = await Applications.find({ candidateId, jobPostId })
+        console.log(applied)
+        if(applied && applied.length != 0) {
+            throw new ApiError(403, 'You already applied to this job!')
+        }
+
         const candidate = await Candidate.findById(candidateId)
         if (!candidate || !candidate.profile_completed) {
             throw new ApiError(403, 'Candidate profile not found or completed!')
         }
 
-        const id = await sendCandidateApplication(jobPostId, candidate)
+        // const id = await sendCandidateApplication(jobPostId, candidate)
 
         const application = await Applications.create({
             candidateId,

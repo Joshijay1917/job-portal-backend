@@ -6,6 +6,8 @@ import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { verifyEmailOtp } from "./email.service.js";
 import { Recruiter } from "../models/recruiter.model.js";
 import type { candidateUpdateDetails } from "../types/candidate.js";
+import { Applications } from "../models/application.model.js";
+import { JobPost, type JobPostInternface } from "../models/jobpost.model.js";
 
 export class CandidateService {
     static async register(data: RegisterBody) {
@@ -137,6 +139,24 @@ export class CandidateService {
             candidate.expected_salary.min !== undefined &&
             candidate.expected_salary.max !== undefined
         )
+    }
+
+    static async getAppliedJobs(candidateId: string | null) {
+        if(!candidateId) {
+            throw new ApiError(403, 'Candidate Id not found!')
+        }
+
+        const candidate = await Candidate.findById(candidateId)
+        if(!candidate) {
+            throw new ApiError(404, 'Candidate not found!')
+        }
+
+        const posts = await Applications.find({ candidateId })
+        const jobPosts = posts.forEach(async(post) => (
+            await JobPost.findById(post.jobPostId)
+        ))
+
+        return jobPosts
     }
 
 }
