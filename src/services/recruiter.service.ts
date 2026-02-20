@@ -1,3 +1,4 @@
+import { Applications, Status } from "../models/application.model.js";
 import { Candidate } from "../models/candidate.model.js";
 import { JobPost } from "../models/jobpost.model.js";
 import { Recruiter, type RecruiterInterface } from "../models/recruiter.model.js";
@@ -175,5 +176,68 @@ export class RecruiterService {
         }
 
         return posts
+    }
+
+    static async deletePost(jobpostId: string) {
+        const doc = await JobPost.findByIdAndDelete(jobpostId)
+
+        if(!doc) {
+            throw new ApiError(500, 'Failed to delete jobPost')
+        }
+
+        return doc
+    }
+
+    static async getAllApplications(recruiterId: string) {
+        const posts = await JobPost.find({ recruiterId })
+
+        const postIds = posts.map(post => post._id)
+
+        const applications = await Applications.find({
+            jobPostId: { $in: postIds }
+        })
+        .populate({
+            path: 'jobPostId',
+            select: 'title'
+        })
+        .populate({
+            path: 'candidateId',
+            select: '_id fname email'
+        })
+        .sort({ createdAt: -1 })
+
+        return applications
+    }
+
+    static async getApplicationDetails(applicationId: string) {
+        if(!applicationId) {
+            throw new ApiError(400, 'Application Id not found!')
+        }
+
+        const app = await Applications
+        .findById(applicationId)
+        .populate({
+            path: 'jobPostId',
+            select: 'title description'
+        })
+        .populate({
+            path: 'candidateId',
+            select: 'fname email description experience_years resume expected_salary category'
+        })
+
+        return app;
+    }
+
+    static async updateStatus(applicationId: string, status: Status) {
+        if(!applicationId || !status) {
+            throw new ApiError(400, 'ApplicationId and Status is required!')
+        }
+
+        const updatedApplication = await Applications.findByIdAndUpdate(applicationId, { $set: { status }}, { new: true, runValidators: true })
+        if(!updatedApplication) {
+            throw new ApiError(400, 'User not found!')
+        }
+
+        return updatedApplication
     }
 }

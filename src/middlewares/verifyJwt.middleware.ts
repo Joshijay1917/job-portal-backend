@@ -1,6 +1,5 @@
 import type { Role } from "../types/job.js";
 import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { verifyAccessToken } from "../utils/jwt.js";
 
@@ -14,7 +13,6 @@ export const verifyJwt = asyncHandler(async (req, res, next) => {
     try {
         const decodedToken = await verifyAccessToken(token) as { id: string, email: string, email_verified: boolean, role: Role }
         if (decodedToken) {
-            console.log('Decoded:', decodedToken)
             const user = {
                 id: decodedToken.id,
                 email: decodedToken.email,

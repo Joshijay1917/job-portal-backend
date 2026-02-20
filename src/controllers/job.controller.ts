@@ -1,4 +1,5 @@
 import { JobService } from "../services/job.service.js";
+import { RecruiterService } from "../services/recruiter.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -49,5 +50,21 @@ export const filterJobs = asyncHandler(async (req, res) => {
     .status(200)
     .json(
         new ApiResponse(200, jobs, "Filtered jobs successfully!")
+    )
+})
+
+export const DeleteJobPost = asyncHandler(async (req, res) => {
+    const id = req.query.jobpostId as string
+
+    if(!id) {
+        throw new ApiError(400, 'JobpostId not found!')
+    }
+
+    const doc = await RecruiterService.deletePost(id)
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, doc, 'DeleteJobPost successfully!')
     )
 })

@@ -1,7 +1,7 @@
 import type { Document, Types } from "mongoose";
 import mongoose from "mongoose";
 
-enum Status {
+export enum Status {
     Applied = 'Applied',
     Shortlisted = 'Shortlisted',
     Rejected = 'Rejected'

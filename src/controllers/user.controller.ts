@@ -10,10 +10,13 @@ export const getUserDetails = asyncHandler(async (req, res) => {
     const id = req.user?.id
     const role = req.user?.role
 
+    
     let details = null
     if(role === 'recruiter') {
+        console.log('Get Recruiter details:', { id, role })
         details = await Recruiter.findById(id).select("-password -refresh_token")
     } else {
+        console.log('Get Candidate details:', { id, role })
         details = await Candidate.findById(id).select("-password -refresh_token")
     }
 
@@ -74,12 +77,59 @@ export const getPosts = asyncHandler(async (req, res) => {
 
 export const getAppliedJobs = asyncHandler(async (req, res) => {
     const id = req?.user?.id || null
-    console.log('Id:', id)
     const posts = await CandidateService.getAppliedJobs(id);
 
     res
     .status(200)
     .json(
         new ApiResponse(200, posts, 'Get all posts!')
+    )
+})
+
+export const getApplications = asyncHandler(async (req, res) => {
+    const id = req.query.recruiterId as string
+
+    if(!id) {
+        throw new ApiError(400, 'Recriter Id not found!')
+    }
+
+    const candidates = await RecruiterService.getAllApplications(id)
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, candidates, 'Get all Applications!')
+    )
+})
+
+export const getAppDetail = asyncHandler(async (req, res) => {
+    const applicationId = req.params.applicationId as string
+
+    if(!applicationId) {
+        throw new ApiError(400, 'Application Id not found!')
+    }
+
+    const app = await RecruiterService.getApplicationDetails(applicationId)
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, app, 'Get application details!')
+    )
+})
+
+export const updateAppStatus = asyncHandler(async (req, res) => {
+    const { appId, status } = req.body
+
+    if(!appId || !status) {
+        throw new ApiError(400, 'Required fields not found!')
+    }
+
+    const updatedApp = await RecruiterService.updateStatus(appId, status)
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, updatedApp, 'Application Status Updated!')
     )
 })
