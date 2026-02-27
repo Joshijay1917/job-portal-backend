@@ -8,6 +8,8 @@ export interface JobPostInternface extends Document {
     logo_url: string | null;
     title: string;
     description: string;
+    responsibilities: string[];
+    skills: string[];
     experience_required?: { min: number, max: number };
     salary: { min: number, max: number };
     category: Category;
@@ -20,7 +22,7 @@ export interface JobPostInternface extends Document {
 const jobPostSchema = new mongoose.Schema<JobPostInternface>({
     recruiterId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Candidate',
+        ref: 'Recruiter',
         required: true
     },
     logo_url: {
@@ -33,6 +35,14 @@ const jobPostSchema = new mongoose.Schema<JobPostInternface>({
     },
     description: {
         type: String,
+        required: true
+    },
+    responsibilities: {
+        type: [String],
+        required: true
+    },
+    skills: {
+        type: [String],
         required: true
     },
     experience_required: {

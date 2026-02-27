@@ -5,7 +5,12 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const JobPost = asyncHandler(async (req, res) => {
-    const post = await JobService.post(req.body)
+    const id = req.user?.id
+    if(!id) {
+        throw new ApiError(400, 'Recruiter id not found!')
+    }
+    
+    const post = await JobService.post(req.body, id)
 
     res
     .status(201)
@@ -22,6 +27,18 @@ export const getJobPosts = asyncHandler(async (req, res) => {
     .status(200)
     .json(
         new ApiResponse(200, posts, "Get posts successfully!")
+    )
+})
+
+export const getJobPostDetails = asyncHandler(async (req, res) => {
+    const id = req.body.id
+
+    const details = await JobService.getDetails(id)
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, details, "Get details successfully!")
     )
 })
 

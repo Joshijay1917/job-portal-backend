@@ -79,7 +79,7 @@ export class RecruiterService {
 
         const isValid = await bcrypt.compare(password, user.password)
         if (!isValid) {
-            throw new ApiError(401, "Invalid email or password");
+            throw new ApiError(400, "Invalid email or password");
         }
 
         const accessToken = await generateAccessToken({ id: user._id, email: user.email, email_verified: user.email_verified, role: 'recruiter' })

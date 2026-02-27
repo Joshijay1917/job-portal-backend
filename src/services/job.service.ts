@@ -13,9 +13,7 @@ const EXPERIENCE_LEVELS = [
 ];
 
 export class JobService {
-    static async post(data: JobPostInternface) {
-        const { recruiterId } = data
-
+    static async post(data: JobPostInternface, recruiterId: string) {
         if (!recruiterId) {
             throw new ApiError(400, 'Recruiter Id is required!')
         }
@@ -27,6 +25,7 @@ export class JobService {
 
         const jobPost = JobPost.create({
             ...data,
+            recruiterId,
             logo_url: recruiter?.company_website || null,
         })
 
@@ -39,11 +38,32 @@ export class JobService {
             JobPost.find({})
                 .skip(skip)
                 .limit(10)
-                .sort({ createdAt: -1 }),
+                .sort({ createdAt: -1 })
+                .select("logo_url title category type createdAt updatedAt")
+                .populate({
+                    path: "recruiterId",
+                    select: "cname"
+                }),
 
             JobPost.countDocuments()
         ])
         return { posts, total, page, totalPages: Math.ceil(total / 10) }
+    }
+
+    static async getDetails(id: string) {
+        if(!id) {
+            throw new ApiError(400, 'Job Id is required!')
+        }
+
+        const jobPost = await JobPost.findById(id).populate({
+            path: 'recruiterId',
+            select: 'cname'
+        })
+        if(!jobPost) {
+            throw new ApiError(500, 'Failed to find job post!')
+        }
+
+        return jobPost;
     }
 
     static async ApplyJob({ candidateId, jobPostId }: ApplyJobType) {

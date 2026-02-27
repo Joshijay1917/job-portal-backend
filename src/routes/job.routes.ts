@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ApplyJobPost, DeleteJobPost, filterJobs, getJobPosts, JobPost } from "../controllers/job.controller.js";
+import { ApplyJobPost, DeleteJobPost, filterJobs, getJobPostDetails, getJobPosts, JobPost } from "../controllers/job.controller.js";
 import { verifyJwt } from "../middlewares/verifyJwt.middleware.js";
 import { allowRoles } from "../middlewares/allowedRoutes.middleware.js";
 
@@ -10,5 +10,6 @@ router.route("/post").post(verifyJwt, allowRoles('recruiter'), JobPost)
 router.route("/apply").post(verifyJwt, allowRoles('candidate'), ApplyJobPost)
 router.route("/filter").post(filterJobs)
 router.route("/delete").delete(verifyJwt, allowRoles('recruiter'), DeleteJobPost)
+router.route("/details").post(verifyJwt, getJobPostDetails)
 
 export default router
