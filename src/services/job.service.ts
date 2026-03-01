@@ -4,7 +4,6 @@ import { JobPost, type JobPostInternface } from "../models/jobpost.model.js";
 import { Recruiter } from "../models/recruiter.model.js";
 import type { ApplyJobType, FilterType } from "../types/job.ts"
 import { ApiError } from "../utils/ApiError.js";
-import { sendCandidateApplication } from "./email.service.js";
 
 const EXPERIENCE_LEVELS = [
     { value: 'entry', find: { min: 0, max: 2 } },
@@ -50,7 +49,7 @@ export class JobService {
         return { posts, total, page, totalPages: Math.ceil(total / 10) }
     }
 
-    static async getDetails(id: string) {
+    static async getDetails(id: string, candidateId: string | null) {
         if(!id) {
             throw new ApiError(400, 'Job Id is required!')
         }
@@ -63,7 +62,12 @@ export class JobService {
             throw new ApiError(500, 'Failed to find job post!')
         }
 
-        return jobPost;
+        let app = null
+        if(candidateId) {
+            app = await Applications.findOne({ candidateId, jobPostId: id })
+        }
+
+        return {jobPost, hasApplied: app ? true : false };
     }
 
     static async ApplyJob({ candidateId, jobPostId }: ApplyJobType) {

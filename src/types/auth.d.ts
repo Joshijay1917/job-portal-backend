@@ -23,9 +23,3 @@ export type LoginBody = {
     email: string;
     password: string;
 }
-
-export type logoutBody = {
-    id: string,
-    email: string,
-    email_verified: boolean
-}

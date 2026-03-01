@@ -37,7 +37,11 @@ export const login = asyncHandler(async (req, res) => {
 })
 
 export const logout = asyncHandler(async (req, res) => {
-    const user = await AuthService.logout(req.body)
+    const id = req.user?.id
+    if(!id) {
+        throw new ApiError(400, 'UserId not found!')
+    }
+    const user = await AuthService.logout(id)
 
     const options: CookieOptions = {
         httpOnly: true,
@@ -78,7 +82,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
         }
 
         if (!user || !user.refresh_token || user.refresh_token !== refreshToken) {
-            throw new ApiError(401, 'Invalid or expired token!')
+            throw new ApiError(403, 'Invalid or expired token!')
         }
 
         console.log('Token generating..')

@@ -1,6 +1,6 @@
 import { ApiError } from "../utils/ApiError.js";
 import { RecruiterService } from './recruiter.service.js';
-import type { LoginBody, logoutBody, RegisterBody } from '../types/auth.js';
+import type { LoginBody, RegisterBody } from '../types/auth.js';
 import { CandidateService } from './candidate.service.js';
 import { Candidate } from "../models/candidate.model.js";
 import { Recruiter } from "../models/recruiter.model.js";
@@ -45,10 +45,7 @@ export class AuthService {
         return user;
     }
 
-    static async logout(data: logoutBody) {
-        console.log('Data:', data)
-        const id = data.id;
-
+    static async logout(id: string) {
         let user = await Candidate.findById(id)
         if(!user) {
             user = await Recruiter.findById(id)

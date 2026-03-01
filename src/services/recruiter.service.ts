@@ -170,7 +170,13 @@ export class RecruiterService {
             throw new ApiError(400, 'RecruiterId not found!')
         }
 
-        const posts = await JobPost.find({ recruiterId: recruiterId }).sort({ createdAt: -1 })
+        const posts = await JobPost.find({ recruiterId: recruiterId })
+        .sort({ createdAt: -1 })
+        .select("logo_url title category type createdAt updatedAt")
+        .populate({
+            path: "recruiterId",
+            select: "cname"
+        })
         if(!posts || posts.length == 0) {
             return []
         }

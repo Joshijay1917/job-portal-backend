@@ -64,9 +64,9 @@ export const updateProfile = asyncHandler(async (req, res) => {
 })
 
 export const getPosts = asyncHandler(async (req, res) => {
-    const id = req.user?.id
+    const id = req.user.id
 
-    const posts = await RecruiterService.getAllPosts(id!)
+    const posts = await RecruiterService.getAllPosts(id)
     
     res
     .status(200)
@@ -87,7 +87,7 @@ export const getAppliedJobs = asyncHandler(async (req, res) => {
 })
 
 export const getApplications = asyncHandler(async (req, res) => {
-    const id = req.query.recruiterId as string
+    const id = req.user.id as string
 
     if(!id) {
         throw new ApiError(400, 'Recriter Id not found!')
