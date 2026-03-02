@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAppDetail, getApplications, getAppliedJobs, getPosts, getUserDetails, updateAppStatus, updateProfile } from "../controllers/user.controller.js";
+import { changeUserPassword, getAppDetail, getApplications, getAppliedJobs, getPosts, getUserDetails, updateAppStatus, updateProfile } from "../controllers/user.controller.js";
 import { verifyJwt } from "../middlewares/verifyJwt.middleware.js";
 import { allowRoles } from "../middlewares/allowedRoutes.middleware.js";
 
@@ -7,6 +7,7 @@ const router = Router()
 
 router.route("/details").get(verifyJwt, getUserDetails)
 router.route("/edit").put(verifyJwt, updateProfile)
+router.route("/change-password").post(verifyJwt, changeUserPassword)
 
 router.route("/posts").get(verifyJwt, allowRoles("recruiter"), getPosts)
 router.route("/applied-posts").get(verifyJwt, allowRoles("candidate"), getAppliedJobs)

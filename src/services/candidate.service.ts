@@ -85,6 +85,28 @@ export class CandidateService {
     };
   }
 
+  static async changePassword(candidateId: string, currentPass: string, newPass: string) {
+    if(!currentPass || !newPass) {
+      throw new ApiError(400, 'Candidate required fields not found!')
+    }
+
+    const candidate = await Candidate.findById(candidateId)
+    if(!candidate) {
+      throw new ApiError(404, 'User not found!')
+    }
+
+    const isValid = await bcrypt.compare(currentPass, candidate.password)
+    if(!isValid) {
+      throw new ApiError(400, 'Please provide valid password!')
+    }
+
+    const hash = await bcrypt.hash(newPass, 10);
+    candidate.password = hash
+    candidate.save({ validateBeforeSave: false })
+
+    return candidate;
+  }
+
   static async verifyEmail(userId: string, otp: number) {
     const user = await Candidate.findById(userId);
     if (!user) {

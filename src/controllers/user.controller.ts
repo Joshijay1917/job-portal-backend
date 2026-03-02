@@ -5,6 +5,7 @@ import { Recruiter, type RecruiterInterface } from "../models/recruiter.model.js
 import { Candidate, type CandidateInternface } from "../models/candidate.model.js";
 import { CandidateService } from "../services/candidate.service.js";
 import { RecruiterService } from "../services/recruiter.service.js";
+import { AuthService } from "../services/auth.service.js";
 
 export const getUserDetails = asyncHandler(async (req, res) => {
     const id = req.user?.id
@@ -60,6 +61,20 @@ export const updateProfile = asyncHandler(async (req, res) => {
     .status(200)
     .json(
         new ApiResponse(200, updated, 'Profile updated!')
+    )
+})
+
+export const changeUserPassword = asyncHandler(async (req, res) => {
+    const id = req.user.id
+    const role = req.user.role
+    const { currentPass, newPass } = req.body
+
+    const result = await AuthService.changePass(id, currentPass, newPass, role);
+
+    res
+    .status(200)
+    .json(
+        new ApiResponse(200, result, 'Password changed successfully!')
     )
 })
 

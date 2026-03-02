@@ -100,6 +100,28 @@ export class RecruiterService {
         }
     }
 
+    static async changePassword(recruiterId: string, currentPass: string, newPass: string) {
+        if(!currentPass || !newPass) {
+            throw new ApiError(400, 'Recruiter required fields not found!')
+        }
+    
+        const recruiter = await Recruiter.findById(recruiterId)
+        if(!recruiter) {
+            throw new ApiError(404, 'User not found!')
+        }
+    
+        const isValid = await bcrypt.compare(currentPass, recruiter.password)
+        if(!isValid) {
+            throw new ApiError(400, 'Please provide valid password!')
+        }
+    
+        const hash = await bcrypt.hash(newPass, 10);
+        recruiter.password = hash
+        recruiter.save({ validateBeforeSave: false })
+    
+        return recruiter;
+    }
+
     static async verifyEmail(userId: string, otp: number) {
         const user = await Recruiter.findById(userId)
         if (!user) {

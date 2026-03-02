@@ -32,8 +32,11 @@ export const getJobPosts = asyncHandler(async (req, res) => {
 
 export const getJobPostDetails = asyncHandler(async (req, res) => {
     const id = req.params.id as string
-    const userId = req.user.id
-    const candidateId = req.user.role === 'candidate' ? userId : null
+    let candidateId = null
+    if(req.user) {
+        const userId = req.user.id
+        candidateId = req.user.role === 'candidate' ? userId : null
+    }
 
     const details = await JobService.getDetails(id, candidateId)
 
