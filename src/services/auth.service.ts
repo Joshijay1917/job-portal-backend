@@ -4,6 +4,8 @@ import type { LoginBody, RegisterBody } from '../types/auth.js';
 import { CandidateService } from './candidate.service.js';
 import { Candidate } from "../models/candidate.model.js";
 import { Recruiter } from "../models/recruiter.model.js";
+import type { Role } from "../types/job.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 export class AuthService {
     static async register(data: RegisterBody) {
@@ -59,5 +61,24 @@ export class AuthService {
         await user.save({ validateBeforeSave: false })
         
         return user;
+    }
+
+    static async changePass(userId: string, currentPass: string, newPass: string, role: Role) {
+        if(!currentPass || !newPass) {
+            throw new ApiError(400, 'Required fields not found!')
+        }
+
+        let verify = null;
+        if(role === 'recruiter') {
+            verify = RecruiterService.changePassword(userId, currentPass, newPass)
+        } else {
+            verify = CandidateService.changePassword(userId, currentPass, newPass)
+        }
+
+        if(!verify) {
+            throw new ApiError(500, 'Something went wrong!')
+        }
+
+        return verify;
     }
 }
