@@ -21,7 +21,13 @@ export const JobPost = asyncHandler(async (req, res) => {
 
 export const getJobPosts = asyncHandler(async (req, res) => {
     const page = req.query.page
-    const posts = await JobService.get(Number(page))
+    let candidateId = null
+    if(req.user) {
+        const userId = req.user.id
+        candidateId = req.user.role === 'candidate' ? userId : null
+    }
+
+    const posts = await JobService.get(Number(page), candidateId)
 
     res
     .status(200)
@@ -39,8 +45,6 @@ export const getJobPostDetails = asyncHandler(async (req, res) => {
     }
 
     const details = await JobService.getDetails(id, candidateId)
-
-    console.log('Details:', details)
 
     res
     .status(200)

@@ -1,13 +1,12 @@
 import type { Role } from "../types/job.js";
-import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { verifyAccessToken } from "../utils/jwt.js";
 
-export const verifyJwt = asyncHandler(async (req, res, next) => {
+export const optionalVerifyJwt = asyncHandler(async (req, res, next) => {
     const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-        throw new ApiError(401, 'Unauthorized request!')
+        return next();
     }
 
     try {
@@ -22,12 +21,8 @@ export const verifyJwt = asyncHandler(async (req, res, next) => {
             req.user = user;
         }
         next()
-    } catch (error: any) {
-        if (error.name === 'TokenExpiredError') {
-            throw new ApiError(401, 'Token expired!')
-        } else {
-            console.error(error)
-            throw error
-        }
+    } catch (error) {
+        console.error(error)
+        return next();
     }
 })

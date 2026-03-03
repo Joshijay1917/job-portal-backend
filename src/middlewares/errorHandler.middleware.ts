@@ -9,7 +9,7 @@ export const errorHandler = (
 ) => {
     const statusCode = err.statusCode || 500;
 
-    console.log(err)
+    // console.log(err)
     // res.status(statusCode).render('error', { message: err.message || 'We founding the error!' })
     res
     .status(statusCode)

@@ -8,6 +8,7 @@ import cors from 'cors'
 import jobRouter from "./routes/job.routes.js"
 import userRouter from "./routes/user.routes.js"
 import { envConfig } from "./config/envConfig.js"
+import savedJobPostRouter from "./routes/savedPosts.routes.js"
 
 const app = express()
 const allowedOrigins = envConfig()
@@ -29,6 +30,7 @@ app.use("/api/auth", authRouter)
 app.use("/api/email", emailRouter)
 app.use("/api/user", userRouter)
 app.use("/api/job", jobRouter)
+app.use("/api/saved-jobs", savedJobPostRouter)
 
 app.use(errorHandler)
 
