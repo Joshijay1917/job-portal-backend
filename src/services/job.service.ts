@@ -2,6 +2,7 @@ import { Applications } from "../models/application.model.js";
 import { Candidate } from "../models/candidate.model.js";
 import { JobPost, type JobPostInternface } from "../models/jobpost.model.js";
 import { Recruiter } from "../models/recruiter.model.js";
+import { SavedJob, type SavedJobsType } from "../models/savedjobs.model.js";
 import type { ApplyJobType, FilterType } from "../types/job.ts"
 import { ApiError } from "../utils/ApiError.js";
 
@@ -31,7 +32,7 @@ export class JobService {
         return jobPost
     }
 
-    static async get(page: number) {
+    static async get(page: number, candidateId: string | null) {
         const skip = (page - 1) * 10
         const [posts, total] = await Promise.all([
             JobPost.find({})
@@ -42,11 +43,32 @@ export class JobService {
                 .populate({
                     path: "recruiterId",
                     select: "cname"
-                }),
+                })
+                .lean<JobPostInternface[]>(),
 
             JobPost.countDocuments()
         ])
-        return { posts, total, page, totalPages: Math.ceil(total / 10) }
+
+        let savedSet = new Set<string>();
+        let modifiedPosts = posts;
+
+        if(candidateId) {
+            const saved = await SavedJob.find({
+                candidateId,
+                jobPostId: { $in: posts.map(p => p._id) }
+            }).select("jobPostId").lean<SavedJobsType[]>();
+
+            savedSet = new Set(
+                saved.map(s => s.jobPostId.toString())
+            );
+
+            modifiedPosts = posts.map(post => ({
+                ...post,
+                isSaved: savedSet.has(post._id.toString())
+            }))
+        }
+
+        return { posts: modifiedPosts, total, page, totalPages: Math.ceil(total / 10) }
     }
 
     static async getDetails(id: string, candidateId: string | null) {

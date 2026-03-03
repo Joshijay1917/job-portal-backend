@@ -3,7 +3,8 @@ import type { Category, JobType } from "../types/job.d.ts";
 import type { CandidateInternface } from "./candidate.model.js";
 import mongoose from "mongoose";
 
-export interface JobPostInternface extends Document {
+export interface JobPostInternface {
+    _id: string
     recruiterId: Types.ObjectId;
     logo_url: string | null;
     title: string;
