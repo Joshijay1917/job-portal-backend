@@ -39,7 +39,7 @@ export class JobService {
                 .skip(skip)
                 .limit(10)
                 .sort({ createdAt: -1 })
-                .select("logo_url title category type createdAt updatedAt")
+                .select("logo_url title category type salary createdAt updatedAt")
                 .populate({
                     path: "recruiterId",
                     select: "cname"
