@@ -11,6 +11,6 @@ router.route("/post").post(verifyJwt, allowRoles('recruiter'), JobPost)
 router.route("/apply").post(verifyJwt, allowRoles('candidate'), ApplyJobPost)
 router.route("/filter").post(filterJobs)
 router.route("/delete").delete(verifyJwt, allowRoles('recruiter'), DeleteJobPost)
-router.route("/details/:id").get(verifyJwt, getJobPostDetails)
+router.route("/details/:id").get(optionalVerifyJwt, getJobPostDetails)
 
 export default router
