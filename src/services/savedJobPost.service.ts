@@ -34,6 +34,10 @@ export class SavedJobsService {
 
         const post = await SavedJob.deleteOne({ candidateId, jobPostId })
 
+        if(!post || post.deletedCount === 0) {
+            return null
+        }
+
         return post
     }
 }

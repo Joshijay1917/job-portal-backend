@@ -1,4 +1,5 @@
 import { SavedJobsService } from "../services/savedJobPost.service.js";
+import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -32,6 +33,10 @@ export const deleteSavedJobPost = asyncHandler(async (req, res) => {
     const jobPostId = req.params.jobPostId as string
 
     const result = await SavedJobsService.deletePost(userId, jobPostId)
+
+    if(!result) {
+        throw new ApiError(500, 'No job post was removed!')
+    }
 
     res
     .status(200)

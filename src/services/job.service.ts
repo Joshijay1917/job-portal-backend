@@ -98,7 +98,6 @@ export class JobService {
         }
 
         const applied = await Applications.find({ candidateId, jobPostId })
-        console.log(applied)
         if(applied && applied.length != 0) {
             throw new ApiError(403, 'You already applied to this job!')
         }
