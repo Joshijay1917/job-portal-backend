@@ -22,7 +22,7 @@ app.use(cors({ origin: function(origin, callback) {
         }
     } else {
         // Allow all preview deployments
-        if (origin.endsWith(".vercel.app")) {
+        if (!isProduction || origin.endsWith(".vercel.app")) {
             return callback(null, true);
         }
     }

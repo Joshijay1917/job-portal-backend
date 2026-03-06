@@ -150,8 +150,6 @@ export class CandidateService {
     if (resume !== undefined) updateObj.resume = resume;
     if (category !== undefined) updateObj.category = category;
 
-    console.log("Expected_salary:", expected_salary);
-
     if (expected_salary) {
       if (expected_salary.min !== undefined)
         updateObj["expected_salary.min"] = expected_salary.min;
@@ -159,8 +157,6 @@ export class CandidateService {
       if (expected_salary.max !== undefined)
         updateObj["expected_salary.max"] = expected_salary.max;
     }
-
-    console.log("Update Obj:", updateObj);
 
     const updated = await Candidate.findByIdAndUpdate(candidateId, updateObj, {
       new: true,
@@ -174,6 +170,7 @@ export class CandidateService {
       candidate.description?.trim() &&
       candidate.experience_years !== undefined &&
       candidate.category &&
+      candidate.resume &&
       candidate.expected_salary &&
       candidate.expected_salary.min !== undefined &&
       candidate.expected_salary.max !== undefined,
@@ -226,22 +223,6 @@ export class CandidateService {
         },
       },
     ]);
-
-    console.log(apps);
-
-    // const jobPosts = apps
-    // .filter(app => app.jobPostId)
-    // .map((app) => {
-    //   const job = app.jobPostId as any;
-
-    //   return {
-    //     ...job?.toObject(),
-    //     applicationId: app._id,
-    //     status: app.status,
-    //     appliedAt: app.createdAt,
-    //     applied: true,
-    //   };
-    // });
 
     return apps;
   }
