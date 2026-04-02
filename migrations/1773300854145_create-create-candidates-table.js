@@ -5,7 +5,7 @@ export const up = (pgm) => {
         fname: { type: 'varchar(255)', notNull: true },
         email: { type: 'varchar(255)', notNull: true, unique: true },
         password: { type: 'varchar(255)', notNull: true },
-        description: { type: 'text', notNull: true },
+        description: { type: 'text', default: null },
         experience_years_min: { type: 'integer', default: 0 },
         experience_years_max: { type: 'integer', default: 0 },
         resume_url: { type: 'varchar(255)', default: null },

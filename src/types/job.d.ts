@@ -33,8 +33,15 @@ export interface FilterType extends QueryFilter<JobPostInternface> {
     category?: Category
 }
 
+export interface PgFilterType {
+    search?: string;
+    jobtype?: string;
+    experience?: string;
+    category?: string;
+}
+
 export type EXPERIENCE_LEVELS = [
-    { value: 'entry', find: {min:0, max:2} },
-    { value: 'mid', find: {min:2, max:4} },
-    { value: 'senior', find: {min:4, max:10}},
+    { value: 'entry', find: { min: 0, max: 2 } },
+    { value: 'mid', find: { min: 2, max: 4 } },
+    { value: 'senior', find: { min: 4, max: 10 } },
 ];
