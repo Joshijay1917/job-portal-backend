@@ -15,13 +15,13 @@ export class AuthService {
         }
 
         let user = null;
-        if(data.role === 'recruiter') {
+        if (data.role === 'recruiter') {
             user = await RecruiterService.register(data)
         } else {
             user = await CandidateService.register(data)
         }
 
-        if(!user) {
+        if (!user) {
             throw new ApiError(500, 'Failed to register user!')
         }
 
@@ -35,12 +35,12 @@ export class AuthService {
         }
 
         let user = await CandidateService.login(data)
-        if(!user) {
+        if (!user) {
             console.log('Call Recruiter Service for user login!')
             user = await RecruiterService.login(data)
         }
 
-        if(!user) {
+        if (!user) {
             throw new ApiError(400, 'User not registered or verified!')
         }
 
@@ -49,33 +49,33 @@ export class AuthService {
 
     static async logout(id: string) {
         let user = await Candidate.findById(id)
-        if(!user) {
+        if (!user) {
             user = await Recruiter.findById(id)
         }
 
-        if(!user) {
+        if (!user) {
             throw new ApiError(404, 'User not found!')
         }
 
         user.refresh_token = null
         await user.save({ validateBeforeSave: false })
-        
+
         return user;
     }
 
     static async changePass(userId: string, currentPass: string, newPass: string, role: Role) {
-        if(!currentPass || !newPass) {
+        if (!currentPass || !newPass) {
             throw new ApiError(400, 'Required fields not found!')
         }
 
         let verify = null;
-        if(role === 'recruiter') {
+        if (role === 'recruiter') {
             verify = RecruiterService.changePassword(userId, currentPass, newPass)
         } else {
             verify = CandidateService.changePassword(userId, currentPass, newPass)
         }
 
-        if(!verify) {
+        if (!verify) {
             throw new ApiError(500, 'Something went wrong!')
         }
 

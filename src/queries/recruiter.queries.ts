@@ -1,0 +1,75 @@
+import { query } from "../config/db.js";
+import type { RecruiterRow } from "../types/pg.js";
+
+export async function findRecruiterByEmail(email: string): Promise<RecruiterRow | null> {
+    const result = await query(
+        'SELECT * FROM recruiters WHERE email = $1',
+        [email]
+    );
+    return result.rows[0] || null;
+}
+
+export async function createRecruiter(data: { email: string, password: string, cname: string, owner: string }): Promise<RecruiterRow> {
+    const result = await query(
+        `INSERT INTO recruiters (email, password, cname, owner, profile_completed, email_verified)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [
+            data.email,
+            data.password,
+            data.cname,
+            data.owner,
+            false,
+            false
+        ]
+    );
+    return result.rows[0];
+}
+
+export async function updateRecruiter(id: number, data: Partial<RecruiterRow>): Promise<RecruiterRow> {
+    const fields = Object.keys(data);
+    const values = Object.values(data);
+    const setClause = fields.map((field, i) => `${field} = $${i + 2}`).join(', ');
+
+    const result = await query(
+        `UPDATE recruiters SET ${setClause}, updatedat = NOW() WHERE id = $1 RETURNING *`,
+        [id, ...values]
+    );
+    return result.rows[0];
+}
+
+export async function findRecruiterById(id: number): Promise<RecruiterRow | null> {
+    const result = await query(
+        'SELECT * FROM recruiters WHERE id = $1',
+        [id]
+    );
+    return result.rows[0] || null;
+}
+
+export async function updateRefreshToken(recruiterId: number, refreshToken: string | null): Promise<void> {
+    await query(
+        'UPDATE recruiters SET refresh_token = $1, updatedat = NOW() WHERE id = $2',
+        [refreshToken, recruiterId]
+    );
+}
+
+export async function updateEmailVerified(recruiterId: number, emailVerified: boolean): Promise<void> {
+    await query(
+        'UPDATE recruiters SET email_verified = $1, updatedat = NOW() WHERE id = $2',
+        [emailVerified, recruiterId]
+    );
+}
+
+export async function updateProfileCompleted(recruiterId: number, profileCompleted: boolean): Promise<void> {
+    await query(
+        'UPDATE recruiters SET profile_completed = $1, updatedat = NOW() WHERE id = $2',
+        [profileCompleted, recruiterId]
+    );
+}
+
+export async function updatePassword(recruiterId: number, password: string): Promise<void> {
+    await query(
+        'UPDATE recruiters SET password = $1, updatedat = NOW() WHERE id = $2',
+        [password, recruiterId]
+    );
+}
