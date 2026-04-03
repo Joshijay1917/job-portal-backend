@@ -12,8 +12,8 @@ export const up = (pgm) => {
             references: '"jobposts"',
             onDelete: "CASCADE",
         },
-        createdAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
-        updatedAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
+        createdat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
+        updatedat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
     });
 
     pgm.addConstraint('savejobs', 'savejobs_pk', {

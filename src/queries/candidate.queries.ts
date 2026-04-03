@@ -45,32 +45,33 @@ export async function updateCandidate(id: number, data: Partial<CandidateRow>): 
     return result.rows[0];
 }
 
-export async function updateRefreshToken(candidateId: number, refreshToken: string | null): Promise<void> {
+export async function updateCandidateRefreshToken(candidateId: number, refreshToken: string | null): Promise<void> {
     await query(
         'UPDATE candidates SET refresh_token = $1, updatedat = NOW() WHERE id = $2',
         [refreshToken, candidateId]
     );
 }
 
-export async function updateEmailVerified(candidateId: number, emailVerified: boolean): Promise<void> {
+export async function updateCandidateEmailVerified(candidateId: number, emailVerified: boolean): Promise<void> {
     await query(
         'UPDATE candidates SET email_verified = $1, updatedat = NOW() WHERE id = $2',
         [emailVerified, candidateId]
     );
 }
 
-export async function updateProfileCompleted(candidateId: number, profileCompleted: boolean): Promise<void> {
+export async function updateCandidateProfileCompleted(candidateId: number, profileCompleted: boolean): Promise<void> {
     await query(
         'UPDATE candidates SET profile_completed = $1, updatedat = NOW() WHERE id = $2',
         [profileCompleted, candidateId]
     );
 }
 
-export async function updatePassword(candidateId: number, password: string): Promise<void> {
-    await query(
-        'UPDATE candidates SET password = $1, updatedat = NOW() WHERE id = $2',
+export async function updateCandidatePassword(candidateId: number, password: string): Promise<CandidateRow> {
+    const result = await query(
+        'UPDATE candidates SET password = $1, updatedat = NOW() WHERE id = $2 RETURNING *',
         [password, candidateId]
     );
+    return result.rows[0];
 }
 
 export async function getAppliedJobs(candidateId: number): Promise<any[]> {

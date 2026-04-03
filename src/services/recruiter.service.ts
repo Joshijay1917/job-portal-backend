@@ -10,153 +10,153 @@ import { sendEmail, verifyEmailOtp } from "./email.service.js";
 import bcrypt from 'bcrypt'
 
 export class RecruiterService {
-    static async register(data: RegisterBody) {
-        const { owner, email, password, cname } = data
-        const normalizedEmail = email.toLowerCase().trim();
+    // static async register(data: RegisterBody) {
+    //     const { owner, email, password, cname } = data
+    //     const normalizedEmail = email.toLowerCase().trim();
 
-        console.log('Get owner ', owner, ' cname is ', cname)
+    //     console.log('Get owner ', owner, ' cname is ', cname)
 
-        if (!cname || !owner) {
-            throw new ApiError(400, 'Company name and owner is required!')
-        }
+    //     if (!cname || !owner) {
+    //         throw new ApiError(400, 'Company name and owner is required!')
+    //     }
 
-        let existingUser = await Recruiter.findOne({ email: normalizedEmail })
-        if(!existingUser) {
-            existingUser = await Candidate.findOne({ email: normalizedEmail})
-        }
+    //     let existingUser = await Recruiter.findOne({ email: normalizedEmail })
+    //     if(!existingUser) {
+    //         existingUser = await Candidate.findOne({ email: normalizedEmail})
+    //     }
 
-        if (existingUser && existingUser.email_verified) {
-            throw new ApiError(400, 'User already registered!')
-        }
+    //     if (existingUser && existingUser.email_verified) {
+    //         throw new ApiError(400, 'User already registered!')
+    //     }
 
-        if (existingUser && !existingUser.email_verified) {
-            // const messageId = await sendEmail(existingUser)
-            // if (!messageId) {
-            //     throw new ApiError(500, 'Failed to send email!')
-            // }
-            existingUser.email_verified = true
-            await existingUser.save({ validateBeforeSave: false })
-            return {
-                id: existingUser._id,
-                email: existingUser.email,
-                email_verified: existingUser.email_verified,
-                role: 'recruiter'
-            };
-        }
+    //     if (existingUser && !existingUser.email_verified) {
+    //         // const messageId = await sendEmail(existingUser)
+    //         // if (!messageId) {
+    //         //     throw new ApiError(500, 'Failed to send email!')
+    //         // }
+    //         existingUser.email_verified = true
+    //         await existingUser.save({ validateBeforeSave: false })
+    //         return {
+    //             id: existingUser._id,
+    //             email: existingUser.email,
+    //             email_verified: existingUser.email_verified,
+    //             role: 'recruiter'
+    //         };
+    //     }
 
-        const hash = await bcrypt.hash(password, 10)
+    //     const hash = await bcrypt.hash(password, 10)
 
-        const user = await Recruiter.create({
-            cname: cname,
-            owner: owner,
-            email: normalizedEmail,
-            password: hash,
-            email_verified: true
-        })
+    //     const user = await Recruiter.create({
+    //         cname: cname,
+    //         owner: owner,
+    //         email: normalizedEmail,
+    //         password: hash,
+    //         email_verified: true
+    //     })
 
-        // const messageId = await sendEmail(user)
-        // if (!messageId) {
-        //     throw new ApiError(500, 'Failed to send email!')
-        // }
+    //     // const messageId = await sendEmail(user)
+    //     // if (!messageId) {
+    //     //     throw new ApiError(500, 'Failed to send email!')
+    //     // }
 
-        return {
-            id: user._id,
-            email: user.email,
-            email_verified: user.email_verified,
-            role: 'recruiter'
-        };
-    }
+    //     return {
+    //         id: user._id,
+    //         email: user.email,
+    //         email_verified: user.email_verified,
+    //         role: 'recruiter'
+    //     };
+    // }
 
-    static async login(data: LoginRecruiter) {
-        const { email, password } = data
+    // static async login(data: LoginRecruiter) {
+    //     const { email, password } = data
 
-        const normalizedEmail = email.toLowerCase().trim();
-        const user = await Recruiter.findOne({ email: normalizedEmail })
+    //     const normalizedEmail = email.toLowerCase().trim();
+    //     const user = await Recruiter.findOne({ email: normalizedEmail })
 
-        if (!user || !user?.email_verified) {
-            return null;
-        }
+    //     if (!user || !user?.email_verified) {
+    //         return null;
+    //     }
 
-        const isValid = await bcrypt.compare(password, user.password)
-        if (!isValid) {
-            throw new ApiError(400, "Invalid email or password");
-        }
+    //     const isValid = await bcrypt.compare(password, user.password)
+    //     if (!isValid) {
+    //         throw new ApiError(400, "Invalid email or password");
+    //     }
 
-        const accessToken = await generateAccessToken({ id: user._id, email: user.email, email_verified: user.email_verified, role: 'recruiter' })
-        const refreshToken = await generateRefreshToken({ _id: user._id })
+    //     const accessToken = await generateAccessToken({ id: user._id, email: user.email, email_verified: user.email_verified, role: 'recruiter' })
+    //     const refreshToken = await generateRefreshToken({ _id: user._id })
 
-        user.refresh_token = refreshToken
-        await user.save({ validateBeforeSave: false })
+    //     user.refresh_token = refreshToken
+    //     await user.save({ validateBeforeSave: false })
 
-        return {
-            user: {
-                id: user._id,
-                email: user.email,
-                email_verified: user.email_verified,
-                role: 'recruiter'
-            },
-            accessToken,
-            refreshToken
-        }
-    }
+    //     return {
+    //         user: {
+    //             id: user._id,
+    //             email: user.email,
+    //             email_verified: user.email_verified,
+    //             role: 'recruiter'
+    //         },
+    //         accessToken,
+    //         refreshToken
+    //     }
+    // }
 
-    static async changePassword(recruiterId: string, currentPass: string, newPass: string) {
-        if(!currentPass || !newPass) {
-            throw new ApiError(400, 'Recruiter required fields not found!')
-        }
-    
-        const recruiter = await Recruiter.findById(recruiterId)
-        if(!recruiter) {
-            throw new ApiError(404, 'User not found!')
-        }
-    
-        const isValid = await bcrypt.compare(currentPass, recruiter.password)
-        if(!isValid) {
-            throw new ApiError(400, 'Please provide valid password!')
-        }
-    
-        const hash = await bcrypt.hash(newPass, 10);
-        recruiter.password = hash
-        recruiter.save({ validateBeforeSave: false })
-    
-        return recruiter;
-    }
+    // static async changePassword(recruiterId: string, currentPass: string, newPass: string) {
+    //     if (!currentPass || !newPass) {
+    //         throw new ApiError(400, 'Recruiter required fields not found!')
+    //     }
 
-    static async verifyEmail(userId: string, otp: number) {
-        const user = await Recruiter.findById(userId)
-        if (!user) {
-            throw new ApiError(404, 'User not found!')
-        }
+    //     const recruiter = await Recruiter.findById(recruiterId)
+    //     if (!recruiter) {
+    //         throw new ApiError(404, 'User not found!')
+    //     }
 
-        const isValid = await verifyEmailOtp(user.email, otp)
-        if (!isValid) {
-            throw new ApiError(400, 'Invalid Otp!')
-        }
+    //     const isValid = await bcrypt.compare(currentPass, recruiter.password)
+    //     if (!isValid) {
+    //         throw new ApiError(400, 'Please provide valid password!')
+    //     }
 
-        user.email_verified = true;
-        await user.save({ validateBeforeSave: false })
+    //     const hash = await bcrypt.hash(newPass, 10);
+    //     recruiter.password = hash
+    //     recruiter.save({ validateBeforeSave: false })
 
-        return {
-            id: user._id,
-            email: user.email,
-            email_verified: user.email_verified
-        };
-    }
+    //     return recruiter;
+    // }
+
+    // static async verifyEmail(userId: string, otp: number) {
+    //     const user = await Recruiter.findById(userId)
+    //     if (!user) {
+    //         throw new ApiError(404, 'User not found!')
+    //     }
+
+    //     const isValid = await verifyEmailOtp(user.email, otp)
+    //     if (!isValid) {
+    //         throw new ApiError(400, 'Invalid Otp!')
+    //     }
+
+    //     user.email_verified = true;
+    //     await user.save({ validateBeforeSave: false })
+
+    //     return {
+    //         id: user._id,
+    //         email: user.email,
+    //         email_verified: user.email_verified
+    //     };
+    // }
 
     static async updateDetails(data: recruiterUpdateDetails) {
         const { recruiterId, email, cname, owner, category, employee_size, company_website } = data
 
         const updateObj: any = {}
 
-        if(email !== undefined) updateObj.email = email
-        if(cname !== undefined) updateObj.cname = cname
-        if(owner !== undefined) updateObj.owner = owner
-        if(category !== undefined) updateObj.category = category
-        if(company_website !== undefined) updateObj.company_website = company_website
+        if (email !== undefined) updateObj.email = email
+        if (cname !== undefined) updateObj.cname = cname
+        if (owner !== undefined) updateObj.owner = owner
+        if (category !== undefined) updateObj.category = category
+        if (company_website !== undefined) updateObj.company_website = company_website
 
         console.log('Emplyoee_size:', employee_size)
 
-        if(employee_size) {
+        if (employee_size) {
             if (employee_size.min !== undefined)
                 updateObj["employee_size.min"] = employee_size.min
 
@@ -188,18 +188,18 @@ export class RecruiterService {
     }
 
     static async getAllPosts(recruiterId: string) {
-        if(!recruiterId) {
+        if (!recruiterId) {
             throw new ApiError(400, 'RecruiterId not found!')
         }
 
         const posts = await JobPost.find({ recruiterId: recruiterId })
-        .sort({ createdAt: -1 })
-        .select("logo_url title category type salary createdAt updatedAt")
-        .populate({
-            path: "recruiterId",
-            select: "cname"
-        })
-        if(!posts || posts.length == 0) {
+            .sort({ createdAt: -1 })
+            .select("logo_url title category type salary createdAt updatedAt")
+            .populate({
+                path: "recruiterId",
+                select: "cname"
+            })
+        if (!posts || posts.length == 0) {
             return []
         }
 
@@ -209,7 +209,7 @@ export class RecruiterService {
     static async deletePost(jobpostId: string) {
         const doc = await JobPost.findByIdAndDelete(jobpostId)
 
-        if(!doc) {
+        if (!doc) {
             throw new ApiError(500, 'Failed to delete jobPost')
         }
 
@@ -224,45 +224,45 @@ export class RecruiterService {
         const applications = await Applications.find({
             jobPostId: { $in: postIds }
         })
-        .populate({
-            path: 'jobPostId',
-            select: 'title'
-        })
-        .populate({
-            path: 'candidateId',
-            select: '_id fname email'
-        })
-        .sort({ createdAt: -1 })
+            .populate({
+                path: 'jobPostId',
+                select: 'title'
+            })
+            .populate({
+                path: 'candidateId',
+                select: '_id fname email'
+            })
+            .sort({ createdAt: -1 })
 
         return applications
     }
 
     static async getApplicationDetails(applicationId: string) {
-        if(!applicationId) {
+        if (!applicationId) {
             throw new ApiError(400, 'Application Id not found!')
         }
 
         const app = await Applications
-        .findById(applicationId)
-        .populate({
-            path: 'jobPostId',
-            select: 'title description'
-        })
-        .populate({
-            path: 'candidateId',
-            select: 'fname email description experience_years resume expected_salary category'
-        })
+            .findById(applicationId)
+            .populate({
+                path: 'jobPostId',
+                select: 'title description'
+            })
+            .populate({
+                path: 'candidateId',
+                select: 'fname email description experience_years resume expected_salary category'
+            })
 
         return app;
     }
 
     static async updateStatus(applicationId: string, status: Status) {
-        if(!applicationId || !status) {
+        if (!applicationId || !status) {
             throw new ApiError(400, 'ApplicationId and Status is required!')
         }
 
-        const updatedApplication = await Applications.findByIdAndUpdate(applicationId, { $set: { status }}, { new: true, runValidators: true })
-        if(!updatedApplication) {
+        const updatedApplication = await Applications.findByIdAndUpdate(applicationId, { $set: { status } }, { new: true, runValidators: true })
+        if (!updatedApplication) {
             throw new ApiError(400, 'User not found!')
         }
 

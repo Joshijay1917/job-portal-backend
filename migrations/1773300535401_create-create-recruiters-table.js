@@ -14,8 +14,8 @@ export const up = (pgm) => {
         profile_completed: { type: 'boolean', default: false },
         email_verified: { type: 'boolean', default: false },
         refresh_token: { type: 'varchar(255)', default: null },
-        createdAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
-        updatedAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
+        createdat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
+        updatedat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
     })
 };
 

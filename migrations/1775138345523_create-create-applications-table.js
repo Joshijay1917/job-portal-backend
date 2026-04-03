@@ -6,8 +6,8 @@ export const up = (pgm) => {
         candidate_id: { type: 'integer', notNull: true, references: 'candidates(id)', onDelete: 'CASCADE' },
         status: { type: 'status', default: 'Applied' },
         cover_letter: { type: 'text', default: null },
-        createdAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
-        updatedAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
+        createdat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
+        updatedat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
     })
 };
 

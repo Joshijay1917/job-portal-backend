@@ -6,23 +6,23 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const JobPost = asyncHandler(async (req, res) => {
     const id = req.user?.id
-    if(!id) {
+    if (!id) {
         throw new ApiError(400, 'Recruiter id not found!')
     }
-    
+
     const post = await JobService.post(req.body, id)
 
     res
-    .status(201)
-    .json(
-        new ApiResponse(201, post, 'Job post successfully!')
-    )
+        .status(201)
+        .json(
+            new ApiResponse(201, post, 'Job post successfully!')
+        )
 })
 
 export const getJobPosts = asyncHandler(async (req, res) => {
     const page = req.query.page
     let candidateId = null
-    if(req.user) {
+    if (req.user) {
         const userId = req.user.id
         candidateId = req.user.role === 'candidate' ? userId : null
     }
@@ -30,16 +30,16 @@ export const getJobPosts = asyncHandler(async (req, res) => {
     const posts = await JobService.get(Number(page), candidateId)
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, posts, "Get posts successfully!")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, posts, "Get posts successfully!")
+        )
 })
 
 export const getJobPostDetails = asyncHandler(async (req, res) => {
     const id = req.params.id as string
     let candidateId = null
-    if(req.user) {
+    if (req.user) {
         const userId = req.user.id
         candidateId = req.user.role === 'candidate' ? userId : null
     }
@@ -47,24 +47,24 @@ export const getJobPostDetails = asyncHandler(async (req, res) => {
     const details = await JobService.getDetails(id, candidateId)
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, details, "Get details successfully!")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, details, "Get details successfully!")
+        )
 })
 
 export const ApplyJobPost = asyncHandler(async (req, res) => {
     const appli = await JobService.ApplyJob(req.body)
 
-    if(!appli) {
+    if (!appli) {
         throw new ApiError(500, 'Failed to get application!')
     }
 
     res
-    .status(201)
-    .json(
-        new ApiResponse(201, appli, 'Applied to jobpost!')
-    )
+        .status(201)
+        .json(
+            new ApiResponse(201, appli, 'Applied to jobpost!')
+        )
 })
 
 export const filterJobs = asyncHandler(async (req, res) => {
@@ -75,24 +75,24 @@ export const filterJobs = asyncHandler(async (req, res) => {
     console.log('Filtered:', jobs)
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, jobs, "Filtered jobs successfully!")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, jobs, "Filtered jobs successfully!")
+        )
 })
 
 export const DeleteJobPost = asyncHandler(async (req, res) => {
     const id = req.query.jobpostId as string
 
-    if(!id) {
+    if (!id) {
         throw new ApiError(400, 'JobpostId not found!')
     }
 
     const doc = await RecruiterService.deletePost(id)
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, doc, 'DeleteJobPost successfully!')
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, doc, 'DeleteJobPost successfully!')
+        )
 })

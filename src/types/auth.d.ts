@@ -1,23 +1,23 @@
-import type { RegisterCandidate } from "./candidate.js";
-import type { RegisterRecruiter } from "./recruiter.js";
+import type { Role } from "./job.js";
 
-export type RegisterBody =
-    | {
-        owner: string;
-        email: string;
-        password: string;
-        cname: string;
-        role: string;
-        fname: string;
-    }
-    | {
-        fname: string;
-        owner: string;
-        email: string;
-        password: string;
-        cname: string;
-        role: string;
-    }
+export type RegisterBody = RecruiterRegister | CandidateRegister
+
+interface BaseUser {
+    email: string;
+    password: string;
+    role: Role
+}
+
+interface RecruiterRegister extends BaseUser {
+    role: Role.Recruter;
+    cname: string;
+    owner: string;
+}
+
+interface CandidateRegister extends BaseUser {
+    role: Role.Candidate;
+    fname: string;
+}
 
 export type LoginBody = {
     email: string;

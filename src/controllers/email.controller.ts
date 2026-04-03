@@ -1,4 +1,5 @@
 import { Recruiter } from "../models/recruiter.model.js";
+import { AuthService } from "../services/auth.service.js";
 import { CandidateService } from "../services/candidate.service.js";
 import { verifyEmailOtp } from "../services/email.service.js";
 import { RecruiterService } from "../services/recruiter.service.js";
@@ -10,24 +11,14 @@ import { verifyAccessToken } from "../utils/jwt.js";
 export const verifyToken = asyncHandler(async (req, res) => {
     const { userId, otp, role } = req.body
 
-    if(!userId || !otp) {
+    if (!userId || !otp) {
         throw new ApiError(400, 'Invalid Access!')
     }
-    console.log(req.body)
-    let user = null; //"recruiter"
-    if(role === 'recruiter') {
-        user = await RecruiterService.verifyEmail(userId, otp)
-    } else {
-        user = await CandidateService.verifyEmail(userId, otp)
-    }
-
-    if(!user) {
-        throw new ApiError(400, 'User not registered')
-    }
+    const user = await AuthService.verifyEmail(userId, otp, role)
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, user, "User verified successfully!")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, user, "User verified successfully!")
+        )
 })

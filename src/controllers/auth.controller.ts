@@ -38,10 +38,11 @@ export const login = asyncHandler(async (req, res) => {
 
 export const logout = asyncHandler(async (req, res) => {
     const id = req.user?.id
-    if(!id) {
-        throw new ApiError(400, 'UserId not found!')
+    const role = req.user?.role
+    if (!id || !role) {
+        throw new ApiError(400, 'UserId or Role not found!')
     }
-    const user = await AuthService.logout(id)
+    const user = await AuthService.logout(Number(id), role)
 
     const options: CookieOptions = {
         httpOnly: true,
@@ -50,12 +51,12 @@ export const logout = asyncHandler(async (req, res) => {
     }
 
     res
-    .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
-    .json(
-        new ApiResponse(200, user, 'User loggedOut!')
-    )
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(
+            new ApiResponse(200, user, 'User loggedOut!')
+        )
 })
 
 export const userDetails = asyncHandler(async (req, res) => {
@@ -76,7 +77,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
         console.log('refreshToken:', decodedToken);
         let user = await Recruiter.findById(decodedToken._id)
         let role = 'recruiter'
-        if(!user) {
+        if (!user) {
             user = await Candidate.findById(decodedToken._id)
             role = 'candidate'
         }

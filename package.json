@@ -7,9 +7,9 @@
   "scripts": {
     "start": "node dist/index.js",
     "build": "tsc",
-    "dev": "node --env-file=.env.development dist/index.js",
+    "dev": "node --env-file=.env dist/index.js",
     "migrate:create": "node-pg-migrate create",
-    "migrate:up": "dotenv -e .env.development -- node-pg-migrate up",
+    "migrate:up": "dotenv -e .env -- node-pg-migrate up",
     "migrate:down": "node-pg-migrate down"
   },
   "author": "",

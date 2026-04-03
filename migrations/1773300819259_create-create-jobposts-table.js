@@ -14,8 +14,8 @@ export const up = (pgm) => {
         job_type: { type: 'jobtypes', default: 'Full Time' },
         category: { type: 'categories' },
         is_active: { type: 'boolean', default: true },
-        createdAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
-        updatedAt: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
+        createdat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
+        updatedat: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') }
     })
 };
 
