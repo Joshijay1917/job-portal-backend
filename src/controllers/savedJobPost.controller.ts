@@ -6,41 +6,41 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export const getAllSavedJobPosts = asyncHandler(async (req, res) => {
     const userId = req.user.id
 
-    const posts = await SavedJobsService.getPosts(userId)
+    const posts = await SavedJobsService.getPosts(userId.toString())
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, posts, 'Get all saved posts!')
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, posts, 'Get all saved posts!')
+        )
 })
 
 export const saveJobPost = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const jobPostId = req.body.jobPostId as string
 
-    const saved = await SavedJobsService.savePost(userId, jobPostId)
+    const saved = await SavedJobsService.savePost(userId.toString(), jobPostId)
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, saved, 'Save job post successfully!')
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, saved, 'Save job post successfully!')
+        )
 })
 
 export const deleteSavedJobPost = asyncHandler(async (req, res) => {
     const userId = req.user.id
     const jobPostId = req.params.jobPostId as string
 
-    const result = await SavedJobsService.deletePost(userId, jobPostId)
+    const result = await SavedJobsService.deletePost(userId.toString(), jobPostId)
 
-    if(!result) {
+    if (!result) {
         throw new ApiError(500, 'No job post was removed!')
     }
 
     res
-    .status(200)
-    .json(
-        new ApiResponse(200, result, 'Delete from saved jobs!')
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, result, 'Delete from saved jobs!')
+        )
 })

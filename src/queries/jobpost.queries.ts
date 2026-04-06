@@ -35,7 +35,7 @@ export async function getJobPostsPaginated(page: number, limit: number): Promise
 
 export async function getJobPostsByRecruiterId(recruiter_id: number): Promise<JobPostRow[]> {
     const result = await query(
-        `SELECT * FROM jobposts WHERE recruiter_id = $1`,
+        `SELECT json_build_object('id', r.id, 'cname', r.cname, 'company_logo', r.company_logo) as "recruiterId", jp.* FROM jobposts jp JOIN recruiters r ON jp.recruiter_id = r.id WHERE recruiter_id = $1`,
         [recruiter_id]
     );
     return result.rows;

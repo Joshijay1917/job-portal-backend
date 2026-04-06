@@ -6,15 +6,12 @@ export type RegisterCandidate = {
 }
 
 export type candidateUpdateDetails = {
-    candidateId: string
+    candidateId: number
     fname: string
     email: string
     description: string
     experience_years: number
     resume?: string | null
-    expected_salary: {
-        min: number
-        max: number
-    }
+    expected_salary: number
     category: string | null
 }

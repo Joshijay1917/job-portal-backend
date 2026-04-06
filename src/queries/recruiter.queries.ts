@@ -74,3 +74,47 @@ export async function updateRecruiterPassword(recruiterId: number, password: str
     );
     return result.rows[0];
 }
+
+export async function getCandidateApplications(recruiterId: number) {
+    const result = await query(
+        `SELECT json_build_object(
+            'id', jp.id,
+            'title', jp.title
+        ) as jobPostId,
+        json_build_object(
+            'id', c.id,
+            'fname', c.fname,
+            'email', c.email
+        ) as candidateId, a.status FROM applications a
+        JOIN jobposts jp ON a.jobpost_id = jp.id
+        JOIN candidates c ON a.candidate_id = c.id
+        WHERE jp.recruiter_id = $1
+        ORDER BY a.createdat DESC`,
+        [recruiterId]
+    );
+    return result.rows;
+}
+
+export async function getCandidateApplicationDetails(applicationId: number) {
+    const result = await query(
+        `SELECT json_build_object(
+            'id', jp.id,
+            'title', jp.title
+        ) as jobPostId,
+        json_build_object(
+            'id', c.id,
+            'fname', c.fname,
+            'email', c.email,
+            'description', c.description,
+            'experience_years', c.experience_years,
+            'resume', c.resume_url,
+            'expected_salary', c.expected_salary,
+            'category', c.category
+        ) as candidateId, a.status FROM applications a
+        JOIN jobposts jp ON a.jobpost_id = jp.id
+        JOIN candidates c ON a.candidate_id = c.id
+        WHERE a.id = $1`,
+        [applicationId]
+    );
+    return result.rows[0] || null;
+}

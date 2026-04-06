@@ -2,7 +2,10 @@ import { Applications, Status } from "../models/application.model.js";
 import { Candidate } from "../models/candidate.model.js";
 import { JobPost } from "../models/jobpost.model.js";
 import { Recruiter, type RecruiterInterface } from "../models/recruiter.model.js";
+import { updateApplicationStatus } from "../queries/application.queries.js";
+import { getCandidateApplicationDetails, getCandidateApplications, updateRecruiter, updateRecruiterProfileCompleted } from "../queries/recruiter.queries.js";
 import type { RegisterBody } from "../types/auth.js";
+import type { RecruiterRow } from "../types/pg.js";
 import type { LoginRecruiter, recruiterUpdateDetails } from "../types/recruiter.js";
 import { ApiError } from "../utils/ApiError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
@@ -144,7 +147,7 @@ export class RecruiterService {
     // }
 
     static async updateDetails(data: recruiterUpdateDetails) {
-        const { recruiterId, email, cname, owner, category, employee_size, company_website } = data
+        const { recruiterId, email, cname, owner, category, employee_size_min, employee_size_max, company_website } = data
 
         const updateObj: any = {}
 
@@ -154,57 +157,49 @@ export class RecruiterService {
         if (category !== undefined) updateObj.category = category
         if (company_website !== undefined) updateObj.company_website = company_website
 
-        console.log('Emplyoee_size:', employee_size)
+        if (employee_size_min !== undefined) updateObj["employee_size_min"] = employee_size_min
+        if (employee_size_max !== undefined) updateObj["employee_size_max"] = employee_size_max
 
-        if (employee_size) {
-            if (employee_size.min !== undefined)
-                updateObj["employee_size.min"] = employee_size.min
+        const updated = await updateRecruiter(recruiterId, updateObj)
 
-            if (employee_size.max !== undefined)
-                updateObj["employee_size.max"] = employee_size.max
+        if (await this.isRecruiterProfileComplete(updated)) {
+            await updateRecruiterProfileCompleted(recruiterId, true)
         }
-
-        const updated = await Recruiter.findByIdAndUpdate(
-            recruiterId,
-            updateObj,
-            { new: true }
-        ).select("-password -refresh_token")
 
         return updated
     }
 
-    static async isRecruiterProfileComplete(recruiter: RecruiterInterface) {
+    static async isRecruiterProfileComplete(recruiter: RecruiterRow) {
         return Boolean(
             recruiter.email &&
             recruiter.cname &&
             recruiter.owner &&
             recruiter.category &&
-            recruiter.employee_size !== undefined &&
-            recruiter.employee_size.min !== undefined &&
-            recruiter.employee_size.max !== undefined &&
+            recruiter.employee_size_min !== undefined &&
+            recruiter.employee_size_max !== undefined &&
             recruiter.company_website &&
             recruiter.email_verified
         )
     }
 
-    static async getAllPosts(recruiterId: string) {
-        if (!recruiterId) {
-            throw new ApiError(400, 'RecruiterId not found!')
-        }
+    // static async getAllPosts(recruiterId: string) {
+    //     if (!recruiterId) {
+    //         throw new ApiError(400, 'RecruiterId not found!')
+    //     }
 
-        const posts = await JobPost.find({ recruiterId: recruiterId })
-            .sort({ createdAt: -1 })
-            .select("logo_url title category type salary createdAt updatedAt")
-            .populate({
-                path: "recruiterId",
-                select: "cname"
-            })
-        if (!posts || posts.length == 0) {
-            return []
-        }
+    //     const posts = await JobPost.find({ recruiterId: recruiterId })
+    //         .sort({ createdAt: -1 })
+    //         .select("logo_url title category type salary createdAt updatedAt")
+    //         .populate({
+    //             path: "recruiterId",
+    //             select: "cname"
+    //         })
+    //     if (!posts || posts.length == 0) {
+    //         return []
+    //     }
 
-        return posts
-    }
+    //     return posts
+    // }
 
     static async deletePost(jobpostId: string) {
         const doc = await JobPost.findByIdAndDelete(jobpostId)
@@ -216,54 +211,53 @@ export class RecruiterService {
         return doc
     }
 
-    static async getAllApplications(recruiterId: string) {
-        const posts = await JobPost.find({ recruiterId })
-
-        const postIds = posts.map(post => post._id)
-
-        const applications = await Applications.find({
-            jobPostId: { $in: postIds }
-        })
-            .populate({
-                path: 'jobPostId',
-                select: 'title'
-            })
-            .populate({
-                path: 'candidateId',
-                select: '_id fname email'
-            })
-            .sort({ createdAt: -1 })
+    static async getAllApplications(recruiterId: number) {
+        const applications = await getCandidateApplications(recruiterId)
+        console.log(applications)
+        // const applications = await Applications.find({
+        //     jobPostId: { $in: postIds }
+        // })
+        //     .populate({
+        //         path: 'jobPostId',
+        //         select: 'title'
+        //     })
+        //     .populate({
+        //         path: 'candidateId',
+        //         select: '_id fname email'
+        //     })
+        //     .sort({ createdAt: -1 })
 
         return applications
     }
 
-    static async getApplicationDetails(applicationId: string) {
+    static async getApplicationDetails(applicationId: number) {
         if (!applicationId) {
             throw new ApiError(400, 'Application Id not found!')
         }
 
-        const app = await Applications
-            .findById(applicationId)
-            .populate({
-                path: 'jobPostId',
-                select: 'title description'
-            })
-            .populate({
-                path: 'candidateId',
-                select: 'fname email description experience_years resume expected_salary category'
-            })
+        // const app = await Applications
+        //     .findById(applicationId)
+        //     .populate({
+        //         path: 'jobPostId',
+        //         select: 'title description'
+        //     })
+        //     .populate({
+        //         path: 'candidateId',
+        //         select: 'fname email description experience_years resume expected_salary category'
+        //     })
+        const app = await getCandidateApplicationDetails(applicationId)
 
         return app;
     }
 
-    static async updateStatus(applicationId: string, status: Status) {
+    static async updateStatus(applicationId: number, status: Status) {
         if (!applicationId || !status) {
             throw new ApiError(400, 'ApplicationId and Status is required!')
         }
 
-        const updatedApplication = await Applications.findByIdAndUpdate(applicationId, { $set: { status } }, { new: true, runValidators: true })
+        const updatedApplication = await updateApplicationStatus(applicationId, status)
         if (!updatedApplication) {
-            throw new ApiError(400, 'User not found!')
+            throw new ApiError(400, 'Application not found!')
         }
 
         return updatedApplication

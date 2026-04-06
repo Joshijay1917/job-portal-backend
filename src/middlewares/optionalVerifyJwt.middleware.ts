@@ -10,7 +10,7 @@ export const optionalVerifyJwt = asyncHandler(async (req, res, next) => {
     }
 
     try {
-        const decodedToken = await verifyAccessToken(token) as { id: string, email: string, email_verified: boolean, role: Role }
+        const decodedToken = await verifyAccessToken(token) as { id: number, email: string, email_verified: boolean, role: Role }
         if (decodedToken) {
             const user = {
                 id: decodedToken.id,

@@ -1,5 +1,5 @@
 import { query } from "../config/db.js";
-import type { ApplicationStatus } from "../types/application.js";
+import type { Status } from "../models/application.model.js";
 
 export async function createApplication(data: { candidate_id: number, jobpost_id: number, cover_letter: string }) {
     try {
@@ -70,7 +70,7 @@ export async function getApplicationDetail(applicationId: number) {
     return result.rows[0];
 }
 
-export async function updateApplicationStatus(id: number, status: ApplicationStatus) {
+export async function updateApplicationStatus(id: number, status: Status) {
     const result = await query(
         `UPDATE applications SET status = $2 WHERE id = $1 RETURNING *`,
         [id, status]

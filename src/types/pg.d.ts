@@ -23,11 +23,9 @@ export interface CandidateRow {
     email: string;
     password: string;
     description: string | null;
-    experience_years_min: number;
-    experience_years_max: number;
+    experience_years: number;
     resume_url: string | null;
-    expected_salary_min: number;
-    expected_salary_max: number;
+    expected_salary: number;
     category: string | null;
     profile_completed: boolean;
     email_verified: boolean;

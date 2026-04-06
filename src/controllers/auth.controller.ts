@@ -42,7 +42,7 @@ export const logout = asyncHandler(async (req, res) => {
     if (!id || !role) {
         throw new ApiError(400, 'UserId or Role not found!')
     }
-    const user = await AuthService.logout(Number(id), role)
+    const user = await AuthService.logout(id, role)
 
     const options: CookieOptions = {
         httpOnly: true,
@@ -71,29 +71,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
     }
 
     try {
-        console.log('Decoding...')
-        const decodedToken = await verifyRefreshToken(refreshToken) as { _id: string, iat: number, exp: number }
-
-        console.log('refreshToken:', decodedToken);
-        let user = await Recruiter.findById(decodedToken._id)
-        let role = 'recruiter'
-        if (!user) {
-            user = await Candidate.findById(decodedToken._id)
-            role = 'candidate'
-        }
-
-        if (!user || !user.refresh_token || user.refresh_token !== refreshToken) {
-            throw new ApiError(403, 'Invalid or expired token!')
-        }
-
-        console.log('Token generating..')
-        const newAccessToken = await generateAccessToken({ id: user._id, email: user.email, email_verified: user.email_verified, role })
-        const newRefreshToken = await generateRefreshToken({ _id: user._id })
-
-        if (user && user.refresh_token && newRefreshToken) {
-            user.refresh_token = newRefreshToken;
-            await user.save({ validateBeforeSave: false });
-        }
+        const user = await AuthService.refreshToken(refreshToken)
 
         const options: CookieOptions = {
             httpOnly: true,
@@ -102,11 +80,11 @@ export const refreshToken = asyncHandler(async (req, res) => {
         }
 
         res
-            .cookie('accessToken', newAccessToken, options)
-            .cookie('refreshToken', newRefreshToken, options)
+            .cookie('accessToken', user.accessToken, options)
+            .cookie('refreshToken', user.refreshToken, options)
             .status(200)
             .json(
-                new ApiResponse(200, { user: { id: user._id, email: user.email, email_verified: user.email_verified }, accessToken: newAccessToken }, 'User logged in successfully!')
+                new ApiResponse(200, { user: user.user, accessToken: user.accessToken }, 'User logged in successfully!')
             )
     } catch (error) {
         console.error(error)

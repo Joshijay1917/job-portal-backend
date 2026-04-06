@@ -10,7 +10,7 @@ import { createRecruiter, findRecruiterByEmail, findRecruiterById, updateRecruit
 import bcrypt from "bcrypt";
 import type { CandidateRow, RecruiterRow } from "../types/pg.js";
 import type { Role } from "../types/job.js";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
 import { verifyEmailOtp } from "./email.service.js";
 
 export class AuthService {
@@ -89,6 +89,8 @@ export class AuthService {
             const accessToken = await generateAccessToken({ id: existingCandidate.id, email: existingCandidate.email, email_verified: existingCandidate.email_verified, role: 'candidate' })
             const refreshToken = await generateRefreshToken({ id: existingCandidate.id })
 
+            await updateCandidateRefreshToken(existingCandidate.id, refreshToken)
+
             return {
                 user: {
                     id: existingCandidate.id,
@@ -109,6 +111,8 @@ export class AuthService {
 
             const accessToken = await generateAccessToken({ id: existingRecruiter.id, email: existingRecruiter.email, email_verified: existingRecruiter.email_verified, role: 'recruiter' })
             const refreshToken = await generateRefreshToken({ id: existingRecruiter.id })
+
+            await updateRecruiterRefreshToken(existingRecruiter.id, refreshToken)
 
             return {
                 user: {
@@ -148,6 +152,40 @@ export class AuthService {
         }
 
         return user;
+    }
+
+    static async refreshToken(refreshToken: string) {
+        const decodedToken = await verifyRefreshToken(refreshToken) as { id: number, iat: number, exp: number }
+
+        let user = await findRecruiterById(decodedToken.id) as null | CandidateRow | RecruiterRow
+        let role = 'recruiter'
+        if (!user) {
+            user = await findCandidateById(decodedToken.id)
+            role = 'candidate'
+        }
+
+        if (!user || !user.refresh_token || user.refresh_token !== refreshToken) {
+            throw new ApiError(403, 'Invalid or expired token!')
+        }
+
+        const newAccessToken = await generateAccessToken({ id: user.id, email: user.email, email_verified: user.email_verified, role })
+        const newRefreshToken = await generateRefreshToken({ id: user.id })
+
+        if (user && newRefreshToken) {
+            if (role === 'recruiter') await updateRecruiterRefreshToken(user.id, newRefreshToken)
+            else await updateCandidateRefreshToken(user.id, newRefreshToken)
+        }
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                role: role,
+                email_verified: user.email_verified,
+            },
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        }
     }
 
     static async changePass(userId: number, currentPass: string, newPass: string, role: Role) {

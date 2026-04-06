@@ -12,11 +12,12 @@ export type LoginRecruiter = {
 }
 
 export type recruiterUpdateDetails = {
-    recruiterId: string;
+    recruiterId: number;
     email: string;
     cname: string;
     owner: string;
     category?: Category | null;
-    employee_size?: { min: number, max: number };
+    employee_size_min?: number;
+    employee_size_max?: number;
     company_website?: string;
 }

@@ -12,6 +12,8 @@ import type { candidateUpdateDetails } from "../types/candidate.js";
 import { Applications } from "../models/application.model.js";
 import { JobPost, type JobPostInternface } from "../models/jobpost.model.js";
 import mongoose from "mongoose";
+import { getAppliedJobs, updateCandidate, updateCandidateProfileCompleted } from "../queries/candidate.queries.js";
+import type { CandidateRow } from "../types/pg.js";
 
 export class CandidateService {
   // static async register(data: RegisterBody) {
@@ -145,84 +147,40 @@ export class CandidateService {
     if (fname !== undefined) updateObj.fname = fname;
     if (email !== undefined) updateObj.email = email;
     if (description !== undefined) updateObj.description = description;
-    if (experience_years !== undefined)
-      updateObj.experience_years = experience_years;
+    if (experience_years !== undefined) updateObj.experience_years = experience_years;
     if (resume !== undefined) updateObj.resume = resume;
     if (category !== undefined) updateObj.category = category;
+    if (expected_salary) updateObj.expected_salary = expected_salary;
 
-    if (expected_salary) {
-      if (expected_salary.min !== undefined)
-        updateObj["expected_salary.min"] = expected_salary.min;
+    const updated = await updateCandidate(candidateId, updateObj)
 
-      if (expected_salary.max !== undefined)
-        updateObj["expected_salary.max"] = expected_salary.max;
+    if (await this.isCandidateProfileComplete(updated)) {
+      await updateCandidateProfileCompleted(candidateId, true)
     }
-
-    const updated = await Candidate.findByIdAndUpdate(candidateId, updateObj, {
-      new: true,
-    }).select("-password -refresh_token");
 
     return updated;
   }
 
-  static async isCandidateProfileComplete(candidate: CandidateInternface) {
+  static async isCandidateProfileComplete(candidate: CandidateRow) {
     return Boolean(
       candidate.description?.trim() &&
       candidate.experience_years !== undefined &&
       candidate.category &&
-      candidate.resume &&
-      candidate.expected_salary &&
-      candidate.expected_salary.min !== undefined &&
-      candidate.expected_salary.max !== undefined,
+      candidate.resume_url &&
+      candidate.expected_salary
     );
   }
 
-  static async getAppliedJobs(candidateId: string | null) {
+  static async getAppliedJobs(candidateId: number) {
     if (!candidateId) {
-      throw new ApiError(403, "Candidate Id not found!");
+      throw new ApiError(400, "Candidate ID required");
     }
 
-    const candidate = await Candidate.findById(candidateId);
-    if (!candidate) {
-      throw new ApiError(404, "Candidate not found!");
-    }
+    const apps = await getAppliedJobs(candidateId);
 
-    const apps = await Applications.aggregate([
-      {
-        $match: { candidateId: new mongoose.Types.ObjectId(candidateId) },
-      },
-      {
-        $lookup: {
-          from: "jobposts",
-          localField: "jobPostId",
-          foreignField: "_id",
-          as: "Job",
-        },
-      },
-      {
-        $unwind: "$Job"
-      },
-      {
-        $replaceRoot: {
-          newRoot: {
-            $mergeObjects: ["$Job", "$$ROOT"],
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "applications",
-          localField: "jobPostId",
-          foreignField: "jobPostId",
-          as: "totalApplications",
-        },
-      },
-      {
-        $addFields: {
-          totalApplied: { $size: "$totalApplications" },
-        },
-      },
-    ]);
+    if (!apps.length) {
+      return [];
+    }
 
     return apps;
   }

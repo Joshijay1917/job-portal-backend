@@ -10,7 +10,7 @@ export const JobPost = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Recruiter id not found!')
     }
 
-    const post = await JobService.post(req.body, id)
+    const post = await JobService.post(req.body, id.toString())
 
     res
         .status(201)
@@ -24,7 +24,7 @@ export const getJobPosts = asyncHandler(async (req, res) => {
     let candidateId = null
     if (req.user) {
         const userId = req.user.id
-        candidateId = req.user.role === 'candidate' ? userId : null
+        candidateId = req.user.role === 'candidate' ? userId.toString() : null
     }
 
     const posts = await JobService.get(Number(page), candidateId)
@@ -41,7 +41,7 @@ export const getJobPostDetails = asyncHandler(async (req, res) => {
     let candidateId = null
     if (req.user) {
         const userId = req.user.id
-        candidateId = req.user.role === 'candidate' ? userId : null
+        candidateId = req.user.role === 'candidate' ? userId.toString() : null
     }
 
     const details = await JobService.getDetails(id, candidateId)
